@@ -9,7 +9,7 @@ struct udrv_device_typedef;
 
 typedef struct udrv_env {
 	int (*log)(int level, const char *fmt, va_list args);
-	void *(*malloc);
+	void *(*malloc)(size_t size);
 	void (*free)(void *ptr);
 	int (*register_device)(struct udrv_device *device);
 	int (*unregister_device)(struct udrv_device *device);

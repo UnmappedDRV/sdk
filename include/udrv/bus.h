@@ -18,10 +18,10 @@ typedef struct udrv_bus_addr {
 	list_node_t list_node;
 	udrv_bus_t *bus;
 	udrv_device_t *device;
-	void *data;
 } udrv_bus_addr_t;
 
 typedef struct udrv_pci_addr {
+	udrv_bus_addr_t addr;
 	uint16_t vendor_id;
 	uint16_t device_id;
 	uint8_t class;

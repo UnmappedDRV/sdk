@@ -1,4 +1,5 @@
 #include <udrv/driver.h>
+#include <udrv/device.h>
 #include <udrv/env.h>
 
 extern udrv_driver_t udrv_meta;
@@ -18,12 +19,12 @@ void udrv_set_env(udrv_env_t *_env) {
 void udrv_log(int level, const char *fmt, ...) {
 	if (!env || !env->log) return;
 	va_list args;
-	va_start(fmt, args);
+	va_start(args, fmt);
 	env->log(level, fmt, args);
 	va_end(args);
 }
 
-void *udrv_malloc(size_t *size) {
+void *udrv_malloc(size_t size) {
 	FUNC_CHECK(malloc, NULL);
 	return env->malloc(size);
 }
@@ -55,8 +56,8 @@ int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef) {
 
 int udrv_entry(void *env, int argc, const char **argv){
 	udrv_set_env(env);
-	if (meta->init) {
-		meta->init(argc, argv);
+	if (udrv_meta.init) {
+		return udrv_meta.init(argc, argv);
 	} else {
 		return 0;
 	}
