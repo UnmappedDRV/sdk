@@ -2,10 +2,12 @@
 #define _UDRV_BUS_H
 
 #include "types.h"
+#include "list.h"
 #include "device.h"
 
 typedef struct udrv_bus {
 	udrv_device_t device;
+	list_t addresses;
 	int type;
 } udrv_bus_t;
 
@@ -13,6 +15,7 @@ typedef struct udrv_bus {
 #define UDRV_BUS_USB 2
 
 typedef struct udrv_bus_addr {
+	list_node_t list_node;
 	udrv_bus_t *bus;
 	udrv_device_t *device;
 	void *data;

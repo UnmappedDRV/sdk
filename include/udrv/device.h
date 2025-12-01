@@ -2,6 +2,7 @@
 #define _UDRV_DEVICE_H
 
 #include "types.h"
+#include "list.h"
 
 struct udrv_driver;
 struct udrv_device;
@@ -13,6 +14,7 @@ typedef int (*udrv_check_addr_t)(struct udrv_bus_addr *addr);
 typedef int (*udrv_ioctl_t)(struct udrv_device *device, long request, void *arg);
 
 typedef struct udrv_device_typedef {
+	list_node_t list_node;
 	struct udrv_driver *driver;
 	udrv_init_device_t    init;
 	udrv_destroy_device_t destroy;
@@ -21,6 +23,7 @@ typedef struct udrv_device_typedef {
 } udrv_device_typedef_t;
 
 typedef struct udrv_device {
+	list_node_t list_node;
 	struct udrv_driver         *driver;
 	struct udrv_bus_addr       *addr;
 	struct udrv_device_typedef *def;
