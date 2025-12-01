@@ -29,8 +29,28 @@ void *udrv_malloc(size_t *size) {
 }
 
 void udrv_free(void *ptr) {
-	FUNC_CHECK(malloc);
+	FUNC_CHECK(free,);
 	return env->free(ptr);
+}
+
+int udrv_register_device(udrv_device_t *device) {
+	FUNC_CHECK(register_device, UDRV_ERR_NOSYS);
+	return env->register_device(device);
+}
+
+int udrv_unregister_device(udrv_device_t *device) {
+	FUNC_CHECK(unregister_device, UDRV_ERR_NOSYS);
+	return env->unregister_device(device);
+}
+
+int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef) {
+	FUNC_CHECK(register_device_typedef, UDRV_ERR_NOSYS);
+	return env->register_device_typedef(device_typedef);
+}
+
+int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef) {
+	FUNC_CHECK(unregister_device_typedef, UDRV_ERR_NOSYS);
+	return env->unregister_device_typedef(device_typedef);
 }
 
 int udrv_entry(void *env, int argc, const char **argv){

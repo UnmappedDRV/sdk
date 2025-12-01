@@ -2,6 +2,7 @@
 #define _UDRV_DRIVER_H
 
 #include "types.h"
+#include "errno.h"
 
 struct udrv_env;
 
@@ -25,5 +26,9 @@ void udrv_set_env(struct udrv_env *env);
 void udrv_log(int level, const char *fmt, ...);
 void *udrv_malloc(size_t *size);
 void udrv_free(void *ptr);
+int udrv_register_device(udrv_device_t *device);
+int udrv_unregister_device(udrv_device_t *device);
+int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef);
+int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef);
 
 #endif
