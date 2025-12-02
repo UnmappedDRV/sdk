@@ -39,5 +39,9 @@ typedef struct udrv_device {
 #define UDRV_CLASS_BUS      1
 #define UDRV_CLASS_DISK     2
 #define UDRV_CLASS_KEYBOARD 3
+#define UDRV_CLASS_MOUSE    4
+#define UDRV_CLASS_GAMEPAD  5
+#define UDRV_CLASS_TOUCH    6
+#define UDRV_CLASS_GPU      7
 
 #endif

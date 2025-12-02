@@ -1,5 +1,6 @@
 #include <udrv/driver.h>
 #include <udrv/device.h>
+#include <udrv/bus.h>
 #include <udrv/env.h>
 
 extern udrv_driver_t udrv_meta;
@@ -39,9 +40,9 @@ int udrv_register_device(udrv_device_t *device) {
 	return env->register_device(device);
 }
 
-int udrv_unregister_device(udrv_device_t *device) {
-	FUNC_CHECK(unregister_device, UDRV_ERR_NOSYS);
-	return env->unregister_device(device);
+int udrv_destroy_device(udrv_device_t *device) {
+	FUNC_CHECK(destroy_device, UDRV_ERR_NOSYS);
+	return env->destroy_device(device);
 }
 
 int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef) {
@@ -52,6 +53,16 @@ int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef) {
 int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef) {
 	FUNC_CHECK(unregister_device_typedef, UDRV_ERR_NOSYS);
 	return env->unregister_device_typedef(device_typedef);
+}
+
+int udrv_hotplug_addr(udrv_bus_addr_t *addr) {
+	FUNC_CHECK(hotplug_addr, UDRV_ERR_NOSYS);
+	return env->hotplug_addr(addr);
+}
+
+int udrv_hotunplug_addr(udrv_bus_addr_t *addr) {
+	FUNC_CHECK(hotunplug_addr, UDRV_ERR_NOSYS);
+	return env->hotunplug_addr(addr);
 }
 
 int udrv_entry(void *env, int argc, const char **argv){

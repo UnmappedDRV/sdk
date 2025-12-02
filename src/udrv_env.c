@@ -28,11 +28,33 @@ int udrv_init_device(udrv_bus_addr_t *addr) {
 
 		// we succed
 		addr->device = device;
+		device->def = device_typedef;
 		udrv_register_device(device);
 		break;
 	}
 
 	return ret;
+}
+
+int udrv_destroy_device(udrv_device_t *device){
+	if (device->type == UDRV_TYPE_BUS) {
+		// TODO : free addresses
+	}
+
+	if (device->def->destroy) {
+		device->def->destroy(device);
+	}
+
+	// release the bus addr
+	if (device->addr) {
+		device->addr->device = NULL;
+	}
+
+	// remove from the devices list
+	udrv_list_remove(&devices, device);
+
+	udrv_free(device);
+	return 0;
 }
 
 int udrv_register_device(udrv_device_t *device) {
@@ -47,14 +69,6 @@ int udrv_register_device(udrv_device_t *device) {
 	return 0;
 }
 
-int udrv_unregister_device(udrv_device_t *device) {
-	if (device->type == UDRV_TYPE_BUS) {
-		// TODO : delete all devices on the bus
-	}
-	udrv_list_remove(&devices, device);
-	return 0;
-}
-
 int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef) {
 	udrv_list_append(&device_typedefs, device_typedef);
 	// TODO : try to init already present bus addr with this new driver
@@ -66,12 +80,29 @@ int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef) {
 	return 0;
 }
 
+int udrv_hotplug_addr(udrv_bus_addr_t *addr) {
+	udrv_list_append(&addr->bus->addresses, addr);
+	udrv_init_device(addr);
+	return 0;
+}
+
+int udrv_hotunplug_addr(udrv_bus_addr_t *addr) {
+	if (addr->device) {
+		int ret = udrv_destroy_device(addr->device);
+		if (ret < 0) return ret;
+	}
+	udrv_list_remove(&addr->bus->addresses, addr);
+	return 0;
+}
+
 int udrv_init_env(udrv_env_t *_env) {
 	env = _env;
 	env->register_device   = udrv_register_device;
-	env->unregister_device = udrv_register_device;
+	env->destroy_device    = udrv_destroy_device;
 	env->register_device_typedef     = udrv_register_device_typedef;
-	env->unregister_device_typedef   = udrv_register_device_typedef;
+	env->unregister_device_typedef   = udrv_unregister_device_typedef;
+	env->hotplug_addr   = udrv_hotplug_addr;
+	env->hotunplug_addr = udrv_hotunplug_addr;
 	return 0;
 }
 
