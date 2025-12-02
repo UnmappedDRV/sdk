@@ -55,7 +55,14 @@ int udrv_init_device(udrv_bus_addr_t *addr) {
 
 int udrv_destroy_device(udrv_device_t *device){
 	if (device->type == UDRV_TYPE_BUS) {
-		// TODO : free addresses
+		// unplug addresses on the bus
+		udrv_bus_t *bus = (udrv_bus_t*)device;
+		udrv_bus_addr_t *addr = (udrv_bus_addr_t *)bus->addresses.first;
+		while (addr) {
+			udrv_bus_addr_t *toclean = addr;
+			addr = (udrv_bus_addr_t *)addr->list_node.next;
+			udrv_hotunplug_addr(toclean);
+		}
 	}
 
 	if (device->def->destroy) {
@@ -114,6 +121,7 @@ int udrv_hotunplug_addr(udrv_bus_addr_t *addr) {
 		if (ret < 0) return ret;
 	}
 	udrv_list_remove(&addr->bus->addresses, addr);
+	udrv_free(addr);
 	return 0;
 }
 
