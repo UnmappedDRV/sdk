@@ -8,11 +8,16 @@ static list_t devices;
 static list_t device_typedefs;
 static list_t drivers;
 
+#define FUNC_CHECK(func,val) if (!env) return val;\
+	if (!env->func) {\
+		udrv_log(UDRV_LOG_WARNING, "non implemented mandatory function '" #func "'");\
+		return val;\
+	}
+
 int udrv_init_device(udrv_bus_addr_t *addr) {
 	if (addr->device) {
 		// a driver already control this address
-		// TODO: proper error code
-		return -1;
+		return UDRV_ERR_BUSY;
 	}
 
 	int ret = -1;
@@ -97,26 +102,39 @@ int udrv_hotunplug_addr(udrv_bus_addr_t *addr) {
 	return 0;
 }
 
+void udrv_log(int level, const char *fmt, ...) {
+	if (!env || !env->log) return;
+	va_list args;
+	va_start(args, fmt);
+	env->log(level, fmt, args);
+	va_end(args);
+}
+
+void *udrv_malloc(size_t size) {
+	FUNC_CHECK(malloc, NULL);
+	return env->malloc(size);
+}
+
+void udrv_free(void *ptr) {
+	FUNC_CHECK(free,);
+	return env->free(ptr);
+}
+
 int udrv_init_env(udrv_env_t *_env) {
 	env = _env;
-	env->register_device   = udrv_register_device;
-	env->destroy_device    = udrv_destroy_device;
-	env->register_device_typedef     = udrv_register_device_typedef;
-	env->unregister_device_typedef   = udrv_unregister_device_typedef;
-	env->hotplug_addr   = udrv_hotplug_addr;
-	env->hotunplug_addr = udrv_hotunplug_addr;
 	return 0;
 }
 
 int udrv_load_driver(void *data, size_t size, udrv_driver_t **driver, int argc, const char **argv) {
-	udrv_entry_t entry;
-	int ret = udrv_load_module(data, size, driver, &entry);
+	int ret = udrv_load_module(data, size, driver);
 	if (ret < 0) return ret;
 
-	ret = entry(env, argc, argv);
-	if (ret < 0) {
-		// TODO : free allocated sections
-		return ret;
+	if ((*driver)->init) {
+		ret = (*driver)->init(argc, argv);
+		if (ret < 0) {
+			// TODO : free allocated sections
+			return ret;
+		}
 	}
 
 	udrv_list_append(&drivers, driver);

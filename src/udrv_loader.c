@@ -29,6 +29,33 @@
 #define get_Shdr(index) \
 ((Elf_Shdr *)((uintptr_t)data + header->e_shoff + (index * header->e_shentsize)))
 
+typedef struct udrv_mapping {
+	const char *name;
+	void *ptr;
+} udrv_mapping_t;
+
+#define FUNC(name) {#name, name}
+
+static udrv_mapping_t mappings[] = {
+	FUNC(udrv_log),
+	FUNC(udrv_malloc),
+	FUNC(udrv_free),
+	FUNC(udrv_register_device),
+	FUNC(udrv_destroy_device),
+	FUNC(udrv_register_device_typedef),
+	FUNC(udrv_unregister_device_typedef),
+	FUNC(udrv_hotplug_addr),
+	FUNC(udrv_hotunplug_addr),
+	FUNC(udrv_strcmp),
+	FUNC(udrv_memcmp),
+
+	// convinent mappings
+	{"malloc", udrv_malloc},
+	{"free"  , udrv_free},
+	{"strcmp", udrv_strcmp},
+	{"memcmp", udrv_memcmp},
+};
+
 static int check_header(Elf_Ehdr *header){
 	if(udrv_memcmp(header->e_ident,ELFMAG,4)){
 		return 0;
@@ -53,7 +80,16 @@ static int check_header(Elf_Ehdr *header){
 	return 1;
 }
 
-int udrv_load_module(void *data, size_t size, udrv_driver_t **driver, udrv_entry_t *entry) {
+static uintptr_t sym_lookup(const char *name) {
+	for (size_t i=0; i<sizeof(mappings)/sizeof(*mappings); i++) {
+		if (!udrv_strcmp(name, mappings[i].name)) {
+			return (uintptr_t)mappings[i].ptr;
+		}
+	}
+	return 0;
+}
+
+int udrv_load_module(void *data, size_t size, udrv_driver_t **driver) {
 	if (size < sizeof(Elf_Ehdr)) {
 		// too small
 		return UDRV_ERR_FORMAT;
@@ -93,22 +129,27 @@ int udrv_load_module(void *data, size_t size, udrv_driver_t **driver, udrv_entry
 		// note that we skip the first symbol ( the NULL symbol)
 		for (size_t i = 1; i < sheader->sh_size / sizeof(Elf_Sym); i++) {
 			if (symtab[i].st_shndx > SHN_UNDEF && symtab[i].st_shndx < SHN_LOPROC) {
-				//symbol to relocate
+				// symbol to relocate
 				symtab[i].st_value += get_Shdr(symtab[i].st_shndx)->sh_addr;
 			} else if (symtab[i].st_shndx == SHN_UNDEF) {
-				//symbols undefined (maybee we can link it)
+				// symbols undefined (maybee we can link it)
+				uintptr_t value = sym_lookup(strtab + symtab[i].st_name);
+				if(value){
+					symtab[i].st_value += value;
+				} else {
+					// unknow sym
+					return UDRV_ERR_FORMAT;
+				}
 			}
 
 			if (udrv_strcmp(strtab + symtab[i].st_name, "udrv_meta")) {
 				*driver = (udrv_driver_t *)symtab[i].st_value;
-			} else if (udrv_strcmp(strtab + symtab[i].st_name, "udrv_entry")) {
-				*entry = (udrv_entry_t)symtab[i].st_value;
 			}
 		}
 		
 	}
 
-	if (!*driver || !*entry) {
+	if (!*driver) {
 		return UDRV_ERR_FORMAT;
 	}
 

@@ -9,8 +9,6 @@ struct udrv_device;
 struct udrv_device_typedef;
 struct udrv_bus_addr;
 
-typedef int (*udrv_entry_t)(struct udrv_env *env, int argc, const char **argv);
-
 typedef struct udrv_driver {
 	const char *name;
 	const char *author;
@@ -27,7 +25,6 @@ typedef struct udrv_driver {
 #define UDRV_LOG_ERROR   3
 #define UDRV_LOG_FATAL   4
 
-void udrv_set_env(struct udrv_env *env);
 void udrv_log(int level, const char *fmt, ...);
 void *udrv_malloc(size_t size);
 void udrv_free(void *ptr);
