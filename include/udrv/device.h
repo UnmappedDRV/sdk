@@ -12,22 +12,24 @@ typedef int (*udrv_init_device_t)(struct udrv_bus_addr *addr, struct udrv_device
 typedef void (*udrv_destroy_device_t)(struct udrv_device *device);
 typedef int (*udrv_check_addr_t)(struct udrv_bus_addr *addr);
 typedef int (*udrv_ioctl_t)(struct udrv_device *device, long request, void *arg);
+typedef udrv_ssize_t (*udrv_read_t)(struct udrv_device *device, void *buffer, size_t count);
+typedef udrv_ssize_t (*udrv_write_t)(struct udrv_device *device, const void *buffer, size_t count);
 
 typedef struct udrv_device_typedef {
 	list_node_t list_node;
 	struct udrv_driver *driver;
 	udrv_init_device_t    init;
 	udrv_destroy_device_t destroy;
-	udrv_check_addr_t     check;
-	udrv_ioctl_t          ioctl;
+	udrv_check_addr_t check;
+	udrv_ioctl_t      ioctl;
+	udrv_read_t       read;
+	udrv_write_t      write;
 } udrv_device_typedef_t;
 
 typedef struct udrv_device {
 	list_node_t list_node;
-	struct udrv_driver         *driver;
 	struct udrv_bus_addr       *addr;
 	struct udrv_device_typedef *def;
-	void *data;
 	int type;
 	int class;
 } udrv_device_t;

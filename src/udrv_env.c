@@ -1,10 +1,12 @@
 #include <udrv/env.h>
 #include <udrv/device.h>
 #include <udrv/bus.h>
+#include <udrv/loader.h>
 
 static udrv_env_t *env;
 static list_t devices;
 static list_t device_typedefs;
+static list_t drivers;
 
 int udrv_init_device(udrv_bus_addr_t *addr) {
 	if (addr->device) {
@@ -106,9 +108,32 @@ int udrv_init_env(udrv_env_t *_env) {
 	return 0;
 }
 
-int udrv_load_module(void *data, size_t size){
-	(void)data;
-	(void)size;
-	// TODO
-	return UDRV_ERR_NOSYS;
+int udrv_load_driver(void *data, size_t size, udrv_driver_t **driver, int argc, const char **argv) {
+	udrv_entry_t entry;
+	int ret = udrv_load_module(data, size, driver, &entry);
+	if (ret < 0) return ret;
+
+	ret = entry(env, argc, argv);
+	if (ret < 0) {
+		// TODO : free allocated sections
+		return ret;
+	}
+
+	udrv_list_append(&drivers, driver);
+	return 0;
+}
+
+int udrv_unload_driver(udrv_driver_t *driver) {
+	// check if the driver is in use
+	foreach (udrv_device_t*, device, devices) {
+		if (device->def->driver == driver) {
+			return UDRV_ERR_BUSY;
+		}
+	}
+	if (driver->fini) {
+		driver->fini();
+	}
+	udrv_list_remove(&drivers, driver);
+	// TODO : free the driver
+	return 0;
 }

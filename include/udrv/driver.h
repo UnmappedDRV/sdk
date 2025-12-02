@@ -9,6 +9,8 @@ struct udrv_device;
 struct udrv_device_typedef;
 struct udrv_bus_addr;
 
+typedef int (*udrv_entry_t)(struct udrv_env *env, int argc, const char **argv);
+
 typedef struct udrv_driver {
 	const char *name;
 	const char *author;
