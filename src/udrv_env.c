@@ -14,29 +14,39 @@ static list_t drivers;
 		return val;\
 	}
 
+static int udrv_init_device_with_typedef(udrv_bus_addr_t *addr, udrv_device_typedef_t *device_typedef) {
+	if (addr->device) {
+		// a driver already control this address
+		return UDRV_ERR_BUSY;
+	}
+	
+	if (!device_typedef->check || !device_typedef->init) return UDRV_ERR_NOTSUP;
+	if (!device_typedef->check(addr)) return UDRV_ERR_NOTSUP;
+	
+	udrv_device_t *device;
+	int ret = device_typedef->init(addr, &device);
+	if (ret < 0) return ret;
+
+	// the driver is compatible with the device
+	addr->device = device;
+	device->def = device_typedef;
+	udrv_register_device(device);
+	return 0;
+}
+
 int udrv_init_device(udrv_bus_addr_t *addr) {
 	if (addr->device) {
 		// a driver already control this address
 		return UDRV_ERR_BUSY;
 	}
 
-	int ret = -1;
+	int ret = UDRV_ERR_NOTSUP;
 
 	foreach (udrv_device_typedef_t*, device_typedef, device_typedefs) {
-		if (!device_typedef->check) continue;
-		if (!device_typedef->check(addr)) continue;
-		// we found a driver typedef compatible with this address
-		udrv_device_t *device;
-		ret = device_typedef->init(addr, &device);
-		if (ret < 0) {
-			// the init failed retry with another driver
-			continue;
-		}
+		ret = udrv_init_device_with_typedef(addr, device_typedef);
+		if (ret < 0) continue;
 
-		// we succed
-		addr->device = device;
-		device->def = device_typedef;
-		udrv_register_device(device);
+		// the driver is compatible
 		break;
 	}
 
@@ -67,7 +77,7 @@ int udrv_destroy_device(udrv_device_t *device){
 int udrv_register_device(udrv_device_t *device) {
 	udrv_list_append(&devices, device);
 	if (device->type == UDRV_TYPE_BUS) {
-		// let try to find driver for devices
+		// let try to find driver for devices on this new bus
 		udrv_bus_t *bus = (udrv_bus_t*)device;
 		foreach (udrv_bus_addr_t*, addr, bus->addresses) {
 			udrv_init_device(addr);
@@ -78,7 +88,12 @@ int udrv_register_device(udrv_device_t *device) {
 
 int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef) {
 	udrv_list_append(&device_typedefs, device_typedef);
-	// TODO : try to init already present bus addr with this new driver
+	foreach (udrv_bus_t*, bus, devices) {
+		if (bus->type != UDRV_TYPE_BUS) continue;
+		foreach (udrv_bus_addr_t*, addr, bus->addresses) {
+			udrv_init_device_with_typedef(addr, device_typedef);
+		}
+	}
 	return 0;
 }
 
