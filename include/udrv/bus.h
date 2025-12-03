@@ -32,4 +32,7 @@ typedef struct udrv_pci_addr {
 	uint8_t fonction;
 } udrv_pci_addr_t;
 
+int udrv_hotplug_addr(udrv_bus_addr_t *addr);
+int udrv_hotunplug_addr(udrv_bus_addr_t *addr);
+
 #endif

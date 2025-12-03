@@ -8,7 +8,7 @@ CFLAGS += -I$(INCLUDEDIR)
 
 all : $(BUILDDIR)/udrv_env.a
 
-$(BUILDDIR)/udrv_env.a : $(BUILDDIR)/udrv_env.o $(BUILDDIR)/udrv_loader.o $(BUILDDIR)/udrv_utils.o
+$(BUILDDIR)/udrv_env.a : $(BUILDDIR)/udrv_env.o $(BUILDDIR)/udrv_loader.o $(BUILDDIR)/udrv_utils.o $(BUILDDIR)/udrv_io.o
 	$(AR) rcs $@ $^
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.c

@@ -46,4 +46,9 @@ typedef struct udrv_device {
 #define UDRV_CLASS_TOUCH    6
 #define UDRV_CLASS_GPU      7
 
+int udrv_register_device(udrv_device_t *device);
+int udrv_destroy_device(udrv_device_t *device);
+int udrv_register_device_typedef(udrv_device_typedef_t *device_typedef);
+int udrv_unregister_device_typedef(udrv_device_typedef_t *device_typedef);
+
 #endif

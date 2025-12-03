@@ -28,11 +28,5 @@ typedef struct udrv_driver {
 void udrv_log(int level, const char *fmt, ...);
 void *udrv_malloc(size_t size);
 void udrv_free(void *ptr);
-int udrv_register_device(struct udrv_device *device);
-int udrv_destroy_device(struct udrv_device *device);
-int udrv_register_device_typedef(struct udrv_device_typedef *device_typedef);
-int udrv_unregister_device_typedef(struct udrv_device_typedef *device_typedef);
-int udrv_hotplug_addr(struct udrv_bus_addr *addr);
-int udrv_hotunplug_addr(struct udrv_bus_addr *addr);
 
 #endif

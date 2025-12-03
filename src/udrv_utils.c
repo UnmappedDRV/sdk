@@ -21,3 +21,14 @@ int udrv_memcmp(const void *buf1,const void *buf2,size_t count){
 
 	return 0;
 }
+
+void *udrv_memset(void *pointer,int value,size_t count){
+	unsigned char *ptr = pointer;
+	while (count > 0){
+		*ptr = value;
+		ptr++;
+		count--;
+	}
+	
+	return pointer;
+}

@@ -1,6 +1,8 @@
 #include <udrv/loader.h>
 #include <udrv/env.h>
 #include <udrv/driver.h>
+#include <udrv/device.h>
+#include <udrv/bus.h>
 #include <udrv/utils.h>
 #include <elf.h>
 
@@ -48,12 +50,14 @@ static udrv_mapping_t mappings[] = {
 	FUNC(udrv_hotunplug_addr),
 	FUNC(udrv_strcmp),
 	FUNC(udrv_memcmp),
+	FUNC(udrv_memset),
 
 	// convinent mappings
 	{"malloc", udrv_malloc},
 	{"free"  , udrv_free},
 	{"strcmp", udrv_strcmp},
 	{"memcmp", udrv_memcmp},
+	{"memset", udrv_memset},
 };
 
 static int check_header(Elf_Ehdr *header){

@@ -12,4 +12,10 @@ typedef struct udrv_version {
 	uint32_t patch;
 } udrv_version_t;
 
+#if defined(__i386__) || defined(__x86_64__)
+typedef uint16_t udrv_port_t;
+#else
+typedef int udrv_port_t;
+#endif
+
 #endif

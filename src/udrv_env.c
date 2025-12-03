@@ -2,17 +2,13 @@
 #include <udrv/device.h>
 #include <udrv/bus.h>
 #include <udrv/loader.h>
+#include <udrv/internal.h>
 
-static udrv_env_t *env;
+udrv_env_t *env;
 static list_t devices;
 static list_t device_typedefs;
 static list_t drivers;
 
-#define FUNC_CHECK(func,val) if (!env) return val;\
-	if (!env->func) {\
-		udrv_log(UDRV_LOG_WARNING, "non implemented mandatory function '" #func "'");\
-		return val;\
-	}
 
 static int udrv_init_device_with_typedef(udrv_bus_addr_t *addr, udrv_device_typedef_t *device_typedef) {
 	if (addr->device) {
@@ -126,25 +122,25 @@ int udrv_hotunplug_addr(udrv_bus_addr_t *addr) {
 }
 
 void udrv_log(int level, const char *fmt, ...) {
-	if (!env || !env->log) return;
+	if (!udrv_env || !udrv_env->log) return;
 	va_list args;
 	va_start(args, fmt);
-	env->log(level, fmt, args);
+	udrv_env->log(level, fmt, args);
 	va_end(args);
 }
 
 void *udrv_malloc(size_t size) {
 	FUNC_CHECK(malloc, NULL);
-	return env->malloc(size);
+	return udrv_env->malloc(size);
 }
 
 void udrv_free(void *ptr) {
 	FUNC_CHECK(free,);
-	return env->free(ptr);
+	return udrv_env->free(ptr);
 }
 
 int udrv_init_env(udrv_env_t *_env) {
-	env = _env;
+	udrv_env = _env;
 	return 0;
 }
 
