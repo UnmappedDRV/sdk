@@ -29,7 +29,7 @@ typedef struct udrv_pci_addr {
 	uint8_t prog_if;
 	uint8_t bus;
 	uint8_t device;
-	uint8_t fonction;
+	uint8_t function;
 } udrv_pci_addr_t;
 
 int udrv_hotplug_addr(udrv_bus_addr_t *addr);
