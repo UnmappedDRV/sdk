@@ -93,6 +93,51 @@ static uintptr_t sym_lookup(const char *name) {
 	return 0;
 }
 
+static int apply_rela(Elf_Rela *rela, Elf_Shdr *section, Elf_Sym *symtab) {
+	// let define some macros
+	#define A rela[i].r_addend
+	#define B 0 // TODO
+	#define P (section->sh_addr + rela->r_offset)
+	#define S symtab[ELF_R_SYM(rela->r_info)].st_value
+	#define Z symtab[ELF_R_SYM(rela->r_info)].st_size
+
+	uint32_t w32;
+#ifndef BITS32
+	uint64_t w64;
+#endif
+
+	switch(ELF_R_TYPE(rela->r_info)){
+#ifdef __x86_64__
+	case R_X86_64_NONE:
+		break;
+	case R_X86_64_64:
+		w64 = S + A;
+		memcpy((void *)P,&w64,sizeof(uint64_t));
+		break;
+	case R_X86_64_PC32:
+		w32 = S + A - P;
+		memcpy((void *)P,&w32,sizeof(uint32_t));
+		break;
+	case R_X86_64_32:
+		w32 = S + A;
+		memcpy((void *)P,&w32,sizeof(uint32_t));
+		break;
+#else
+	(void)w32;
+#ifndef BITS32
+	(void)w64;
+#endif
+	(void)section;
+	(void)symtab;
+#warning "unsupported architecture"
+#endif
+	default :
+		udrv_log(UDRV_LOG_WARNING, "unknow relocation type %d\n", ELF_R_TYPE(rela->r_info));
+		return -1;
+	}
+	return 0;
+}
+
 int udrv_load_module(void *data, size_t size, udrv_driver_t **driver) {
 	if (size < sizeof(Elf_Ehdr)) {
 		// too small
@@ -154,10 +199,27 @@ int udrv_load_module(void *data, size_t size, udrv_driver_t **driver) {
 	}
 
 	if (!*driver) {
+error:
+		// TODO : unmap mapped sections
 		return UDRV_ERR_FORMAT;
 	}
 
-	// TODO : apply relocations
+	// apply relocations
+	for(size_t i=0; i<header->e_shnum; i++){
+		Elf_Shdr *sheader = get_Shdr(i);
+		if(sheader->sh_type != SHT_RELA) continue;
+
+		// find the relocation table and the symbol table and the section it apply to
+		Elf_Rela *rela = (Elf_Rela *)sheader->sh_addr;
+		Elf_Sym *symtab = (Elf_Sym *)get_Shdr(sheader->sh_link)->sh_addr;
+		Elf_Shdr *section = get_Shdr(sheader->sh_info);
+
+		// iterate trought each relocation
+		for (size_t i=0; i < sheader->sh_size / sizeof(Elf_Rela); i++){
+			if (apply_rela(&rela[i], section, symtab) < 0) goto error;
+		}
+	}
+		
 
 	return 0;
 }
