@@ -4,7 +4,7 @@
 #include <udrv/loader.h>
 #include <udrv/internal.h>
 
-udrv_env_t *env;
+udrv_env_t *udrv_env;
 static list_t devices;
 static list_t device_typedefs;
 static list_t drivers;

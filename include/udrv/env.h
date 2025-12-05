@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 struct udrv_bus_addr;
+struct udrv_driver;
 struct udrv_device;
 struct udrv_device_typedef;
 
@@ -21,6 +22,6 @@ typedef struct udrv_env {
 } udrv_env_t;
 
 int udrv_init_env(udrv_env_t *_env);
-int udrv_load_driver(void *data, size_t size, udrv_driver_t **driver, int argc, const char **argv) ;
+int udrv_load_driver(void *data, size_t size, struct udrv_driver **driver, int argc, const char **argv) ;
 
 #endif
