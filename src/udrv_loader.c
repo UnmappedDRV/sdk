@@ -95,7 +95,7 @@ static uintptr_t sym_lookup(const char *name) {
 
 static int apply_rela(Elf_Rela *rela, Elf_Shdr *section, Elf_Sym *symtab) {
 	// let define some macros
-	#define A rela[i].r_addend
+	#define A rela->r_addend
 	#define B 0 // TODO
 	#define P (section->sh_addr + rela->r_offset)
 	#define S symtab[ELF_R_SYM(rela->r_info)].st_value

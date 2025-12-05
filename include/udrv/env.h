@@ -20,4 +20,7 @@ typedef struct udrv_env {
 	uint32_t (*in_dword)(udrv_port_t port);
 } udrv_env_t;
 
+int udrv_init_env(udrv_env_t *_env);
+int udrv_load_driver(void *data, size_t size, udrv_driver_t **driver, int argc, const char **argv) ;
+
 #endif
